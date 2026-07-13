@@ -64,3 +64,22 @@ When in doubt, omit.
 Prefer short sections and bullets. If the repo is simple, keep the file simple. If the repo is large, summarize the few structural facts that actually change how an agent should work.
 
 If `AGENTS.md` already exists at `${path}`, improve it in place rather than rewriting blindly. Preserve verified useful guidance, delete fluff or stale claims, and reconcile it with the current codebase.
+
+## Session summary table
+
+Append this table at the very bottom of `AGENTS.md`. It serves as minimal project memory across sessions — each row is one line, no paragraphs, no daily journals:
+
+```
+<!-- session-summary -->
+| Date | Summary |
+|---|---|
+```
+
+When an agent finishes meaningful work, it appends ONE row to this table (above the header row):
+```
+| YYYY-MM-DD | Changed `<files>`, reason. Convention/discovery: `<key finding>`. Next: `<next step or blocker>`. |
+```
+
+Newer rows are inserted above older ones. Do NOT expand into paragraphs — one line per session. Future sessions read this table to understand what happened without consuming large context.
+
+If this table already exists in the file, preserve it and just add the row.

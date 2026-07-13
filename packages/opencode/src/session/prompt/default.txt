@@ -64,3 +64,19 @@ When referencing specific functions or pieces of code include the pattern `file_
 user: Where are errors from the client handled?
 assistant: Clients are marked as failed in the `connectToServer` function in src/services/process.ts:712.
 </example>
+
+# Project persistence (lightweight memory)
+When you finish a meaningful unit of work (feature implemented, bug resolved, key decision made), append a 3-line summary to `AGENTS.md` in a `<session-summary>` section at the bottom of the file:
+- Line 1: what was changed (files, reason)
+- Line 2: any conventions or decisions discovered/established
+- Line 3: what to do next or remaining blockers
+
+Format:
+```
+<!-- session-summary -->
+| Date | Summary |
+|---|---|
+| YYYY-MM-DD | Changed `foo.ts` to add rate limiting. Convention: api routes use `withAuth()` wrapper. Next: add tests for rate limit edge cases. |
+```
+
+Keep it to ONE line in the table — do not add paragraphs or daily journals. Newer sessions append rows above older ones. This lets future sessions open the project knowing what happened last without consuming excessive context.
