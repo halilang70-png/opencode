@@ -710,6 +710,18 @@ Use an object to keep built-ins enabled while configuring overrides or custom LS
 
 By default, opencode **allows all operations** without requiring explicit approval. You can change this using the `permission` option.
 
+**Quick bypass**: Set `OPENCODE_AUTO_PERMISSION=1` to skip all permission prompts entirely. All tools run immediately without asking — equivalent to `{"*": "allow"}`. Only use in trusted directories with git version control.
+
+```bash
+OPENCODE_AUTO_PERMISSION=1 opencode
+```
+
+You can also set it permanently in your shell profile:
+
+```bash
+export OPENCODE_AUTO_PERMISSION=1
+```
+
 For example, to ensure that the `edit` and `bash` tools require user approval:
 
 ```json title="opencode.json"

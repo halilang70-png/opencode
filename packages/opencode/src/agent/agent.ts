@@ -137,19 +137,23 @@ const layer = Layer.effect(
 
         const user = Permission.fromConfig(cfg.permission ?? {})
 
+        const autoPermission = process.env.OPENCODE_AUTO_PERMISSION === "1" || process.env.OPENCODE_AUTO_PERMISSION === "true"
+
         const agents: Record<string, Info> = {
           build: {
             name: "build",
             description: "The default agent. Executes tools based on configured permissions.",
             options: {},
-            permission: Permission.merge(
-              defaults,
-              Permission.fromConfig({
-                question: "allow",
-                plan_enter: "allow",
-              }),
-              user,
-            ),
+            permission: autoPermission
+              ? Permission.fromConfig({ "*": "allow" })
+              : Permission.merge(
+                  defaults,
+                  Permission.fromConfig({
+                    question: "allow",
+                    plan_enter: "allow",
+                  }),
+                  user,
+                ),
             mode: "primary",
             native: true,
           },
