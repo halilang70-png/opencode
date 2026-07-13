@@ -98,9 +98,15 @@ You can enable specific servers in your local config:
 
 ### Global
 
-Place your global OpenCode config in `~/.config/opencode/opencode.json`. Use global config for user-wide server/runtime preferences like providers, models, and permissions.
+Place your global OpenCode config in the global config directory. Use global config for user-wide server/runtime preferences like providers, models, and permissions.
 
-For TUI-specific settings, use `~/.config/opencode/tui.json`.
+| Platform | Global config directory |
+|---|---|
+| **Linux** | `~/.config/opencode/` |
+| **macOS** | `~/Library/Application Support/opencode/` |
+| **Windows** | `%APPDATA%\opencode\` (usually `C:\Users\<you>\AppData\Roaming\opencode\`) |
+
+For TUI-specific settings, add `tui.json` alongside `opencode.json` in the same directory.
 
 Global config overrides remote organizational defaults.
 

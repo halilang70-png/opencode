@@ -111,12 +111,16 @@ async function applyPlugin(load: PluginLoader.Loaded, input: PluginInput, hooks:
   const plugin = readV1Plugin(load.mod, load.spec, "server", "detect")
   if (plugin) {
     await resolvePluginId(load.source, load.spec, load.target, readPluginId(plugin.id, load.spec), load.pkg)
-    hooks.push(await (plugin as PluginModule).server(input, load.options))
+    const result = await (plugin as PluginModule).server(input, load.options)
+    hooks.push(result)
+    console.log(`plugin loaded: ${load.spec} (has hooks: ${Object.keys(result).length > 0})`)
     return
   }
 
   for (const server of getLegacyPlugins(load.mod)) {
-    hooks.push(await server(input, load.options))
+    const result = await server(input, load.options)
+    hooks.push(result)
+    console.log(`plugin loaded: ${load.spec} (legacy, hooks: ${Object.keys(result).length})`)
   }
 }
 
@@ -171,7 +175,10 @@ const layer = Layer.effect(
             Effect.tapError((error) => Effect.logError("failed to load internal plugin", { name: plugin.name, error })),
             Effect.option,
           )
-          if (init._tag === "Some") hooks.push(init.value)
+          if (init._tag === "Some") {
+            hooks.push(init.value)
+            console.log(`plugin loaded: ${plugin.name} (internal, hooks: ${Object.keys(init.value).length})`)
+          }
         }
 
         const plugins = flags.pure ? [] : (cfg.plugin_origins ?? [])
