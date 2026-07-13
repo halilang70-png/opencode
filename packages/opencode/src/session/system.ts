@@ -25,20 +25,49 @@ import { MCP } from "@/mcp"
 import { PermissionV1 } from "@opencode-ai/core/v1/permission"
 
 export function provider(model: Provider.Model) {
-  if (model.api.id.includes("muse-spark")) return [PROMPT_META]
-  if (model.api.id.includes("gpt-4") || model.api.id.includes("o1") || model.api.id.includes("o3"))
-    return [PROMPT_BEAST]
-  if (model.api.id.includes("gpt")) {
-    if (model.api.id.includes("codex")) {
-      return [PROMPT_CODEX]
-    }
+  const id = model.api.id.toLowerCase()
+  const pid = model.providerID.toLowerCase()
+
+  if (id.includes("muse-spark")) return [PROMPT_META]
+  if (id.includes("gpt-4") || id.includes("o1") || id.includes("o3")) return [PROMPT_BEAST]
+  if (id.includes("gpt")) {
+    if (id.includes("codex")) return [PROMPT_CODEX]
     return [PROMPT_GPT]
   }
-  if (model.api.id.includes("gemini-")) return [PROMPT_GEMINI]
-  if (model.api.id.includes("claude")) return [PROMPT_ANTHROPIC]
-  if (model.api.id.toLowerCase().includes("trinity")) return [PROMPT_TRINITY]
-  if (model.api.id.toLowerCase().includes("kimi")) return [PROMPT_KIMI]
-  return [PROMPT_DEFAULT]
+  if (id.includes("gemini-")) return [PROMPT_GEMINI]
+  if (id.includes("claude")) return [PROMPT_ANTHROPIC]
+  if (id.includes("trinity")) return [PROMPT_TRINITY]
+  if (id.includes("kimi")) return [PROMPT_KIMI]
+
+  // Models from provider/groups that were previously discriminated against:
+  // DeepSeek, NVIDIA, Z.AI, GLM, Qwen, Llama/Meta via non-spark providers, etc.
+  // Previously all fell through to default.txt which forced "minimize output" anti-agentic rules.
+  // Now they get beast.txt — the same autonomous agent prompt that GPT-4/o1/o3 receive.
+  if (
+    pid.includes("deepseek") ||
+    pid.includes("nvidia") ||
+    pid.includes("z.ai") ||
+    pid.includes("z-ai") ||
+    pid.includes("groq") ||
+    pid.includes("cerebras") ||
+    pid.includes("fireworks") ||
+    pid.includes("together") ||
+    pid.includes("deepinfra") ||
+    pid.includes("huggingface") ||
+    pid.includes("openrouter") ||
+    pid.includes("nebius") ||
+    id.includes("glm") ||
+    id.includes("qwen") ||
+    id.includes("deepseek") ||
+    id.includes("llama") ||
+    id.includes("mistral")
+  ) {
+    return [PROMPT_BEAST]
+  }
+
+  // Default fallback: all unrecognized models get beast.txt (agentic autonomy)
+  // instead of the old default.txt that instructed models to minimize output.
+  return [PROMPT_BEAST]
 }
 
 export interface Interface {
