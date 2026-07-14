@@ -44,6 +44,7 @@ import { RuntimeFlags } from "@/effect/runtime-flags"
 import { ProviderV2 } from "@opencode-ai/core/provider"
 import { ModelV2 } from "@opencode-ai/core/model"
 import { SessionMessage } from "@opencode-ai/schema/session-message"
+import { Thread } from "@opencode-ai/schema/thread"
 
 const parentTitlePrefix = "New session - "
 const childTitlePrefix = "Child session - "
@@ -80,6 +81,7 @@ export function fromRow(row: SessionRow): Info {
     slug: row.slug,
     projectID: row.project_id,
     workspaceID: row.workspace_id ?? undefined,
+    threadID: row.thread_id ? Thread.ID.make(row.thread_id) : undefined,
     directory: row.directory,
     path: row.path ?? undefined,
     parentID: row.parent_id ?? undefined,
@@ -123,6 +125,7 @@ export function toRow(info: Info) {
     project_id: info.projectID,
     workspace_id: info.workspaceID,
     parent_id: info.parentID,
+    thread_id: info.threadID ?? null,
     slug: info.slug,
     directory: info.directory,
     path: info.path,
@@ -226,6 +229,7 @@ export const Info = Schema.Struct({
   slug: Schema.String,
   projectID: ProjectV2.ID,
   workspaceID: optional(WorkspaceV2.ID),
+  threadID: optional(Thread.ID),
   directory: Schema.String,
   path: optional(Schema.String),
   parentID: optional(SessionID),
@@ -260,6 +264,7 @@ export type GlobalInfo = Types.DeepMutable<Schema.Schema.Type<typeof GlobalInfo>
 export const CreateInput = Schema.optional(
   Schema.Struct({
     parentID: Schema.optional(SessionID),
+    threadID: Schema.optional(Thread.ID),
     title: Schema.optional(Schema.String),
     agent: Schema.optional(Schema.String),
     model: Schema.optional(Model),
@@ -304,6 +309,7 @@ export type ListInput = {
   scope?: "project"
   path?: string
   workspaceID?: WorkspaceV2.ID
+  threadID?: Thread.ID
   roots?: boolean
   start?: number
   search?: string
@@ -504,6 +510,7 @@ const layer: Layer.Layer<
       agent?: string
       model?: Schema.Schema.Type<typeof Model>
       parentID?: SessionID
+      threadID?: Thread.ID
       workspaceID?: WorkspaceV2.ID
       directory: string
       path?: string
@@ -520,6 +527,7 @@ const layer: Layer.Layer<
         path: input.path,
         workspaceID: input.workspaceID,
         parentID: input.parentID,
+        threadID: input.threadID,
         title: input.title ?? (input.parentID ? childTitlePrefix : parentTitlePrefix) + new Date().toISOString(),
         agent: input.agent,
         model: input.model,
@@ -668,6 +676,7 @@ const layer: Layer.Layer<
 
     const create = Effect.fn("Session.create")(function* (input?: {
       parentID?: SessionID
+      threadID?: Thread.ID
       title?: string
       agent?: string
       model?: Schema.Schema.Type<typeof Model>
@@ -679,6 +688,7 @@ const layer: Layer.Layer<
       const workspace = yield* InstanceState.workspaceID
       return yield* createNext({
         parentID: input?.parentID,
+        threadID: input?.threadID,
         directory: ctx.directory,
         path: sessionPath(ctx.worktree, ctx.directory),
         title: input?.title,
@@ -965,6 +975,9 @@ function listByProject(
 
   if (input.workspaceID) {
     conditions.push(eq(SessionTable.workspace_id, input.workspaceID))
+  }
+  if (input.threadID) {
+    conditions.push(eq(SessionTable.thread_id, input.threadID))
   }
   if (input.path !== undefined) {
     if (input.path) {

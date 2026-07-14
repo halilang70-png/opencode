@@ -37,6 +37,7 @@ import {
   UpdatePayload,
 } from "../groups/session"
 import { PermissionNotFoundError } from "../errors"
+import { Thread } from "@opencode-ai/schema/thread"
 import * as SessionError from "./session-errors"
 import { mergeWorktree, getWorktreeDiff } from "@/workflow/worktree"
 
@@ -68,6 +69,7 @@ export const sessionHandlers = HttpApiBuilder.group(InstanceHttpApi, "session", 
         directory: ctx.query.scope === "project" ? undefined : directory,
         scope: ctx.query.scope,
         path: ctx.query.path,
+        threadID: ctx.query.threadID ? Thread.ID.make(ctx.query.threadID) : undefined,
         roots: ctx.query.roots,
         start: ctx.query.start,
         search: ctx.query.search,

@@ -534,6 +534,8 @@ const SessionRevert = Schema.Struct({
   diff: optional(Schema.String),
 })
 
+import { Thread } from "../thread"
+
 const SessionModel = Schema.Struct({
   id: Model.ID,
   providerID: Provider.ID,
@@ -545,6 +547,7 @@ export const SessionInfo = Schema.Struct({
   slug: Schema.String,
   projectID: Project.ID,
   workspaceID: optional(WorkspaceID),
+  threadID: optional(Thread.ID),
   directory: Schema.String,
   path: optional(Schema.String),
   parentID: optional(SessionID),

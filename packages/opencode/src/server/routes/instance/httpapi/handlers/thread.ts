@@ -1,4 +1,5 @@
 import { Thread } from "@opencode-ai/schema/thread"
+import { Session } from "@/session/session"
 import { Effect, Schema } from "effect"
 import { HttpApiBuilder, HttpApiError } from "effect/unstable/httpapi"
 import { InstanceHttpApi } from "../api"
@@ -66,11 +67,11 @@ export const threadHandlers = HttpApiBuilder.group(InstanceHttpApi, "thread", (h
       yield* requireThread(ctx.params.threadID)
       const { db } = yield* Database.Service
       const rows = yield* db
-        .select({ id: SessionTable.id, title: SessionTable.title })
+        .select()
         .from(SessionTable)
         .where(eq(SessionTable.thread_id, ctx.params.threadID))
         .all()
         .pipe(Effect.orDie)
-      return rows
+      return rows.map(Session.fromRow)
     })),
 )
