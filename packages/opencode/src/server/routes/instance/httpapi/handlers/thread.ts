@@ -17,7 +17,7 @@ const requireThread = (threadID: Thread.ID) =>
     return thread
   })
 
-export const ThreadHandlers = HttpApiBuilder.group(InstanceHttpApi, "thread", (handlers) =>
+export const threadHandlers = HttpApiBuilder.group(InstanceHttpApi, "thread", (handlers) =>
   handlers
     .handle("list", Effect.fn("ThreadHttpApi.list")(function* (ctx) {
       const store = yield* ThreadStore.Service
