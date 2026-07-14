@@ -56,9 +56,17 @@ import { SessionTable } from "@opencode-ai/core/session/sql"
 import { SessionReminders } from "./reminders"
 import { SessionTools } from "./tools"
 import { LLMEvent } from "@opencode-ai/llm"
+import {
+  parseTokenBudget,
+  createBudgetTracker,
+  checkTokenBudget,
+  type BudgetTracker,
+} from "./token-budget"
 
 // @ts-ignore
 globalThis.AI_SDK_LOG_WARNINGS = false
+
+const sessionBudgets = new Map<SessionID, { budget: number; tracker: BudgetTracker }>()
 
 const decodeMessageInfo = Schema.decodeUnknownExit(SessionV1.Info)
 const decodeMessagePart = Schema.decodeUnknownExit(SessionV1.Part)
@@ -1057,6 +1065,16 @@ const layer = Layer.effect(
       const message = yield* createUserMessage(input)
       yield* sessions.touch(input.sessionID)
 
+      const textParts = input.parts.filter((p): p is typeof p & { type: "text" } => p.type === "text")
+      const fullText = textParts.map((p) => p.text).join(" ")
+      const parsedBudget = parseTokenBudget(fullText)
+      if (parsedBudget) {
+        sessionBudgets.set(input.sessionID, {
+          budget: parsedBudget,
+          tracker: createBudgetTracker(),
+        })
+      }
+
       const permissions: PermissionV1.Rule[] = []
       for (const [t, enabled] of Object.entries(input.tools ?? {})) {
         permissions.push({ permission: t, action: enabled ? "allow" : "deny", pattern: "*" })
@@ -1316,7 +1334,35 @@ const layer = Layer.effect(
               }
             }
 
-            if (result === "stop") return "break" as const
+            if (result === "stop") {
+              const budgetEntry = sessionBudgets.get(sessionID)
+              if (budgetEntry) {
+                budgetEntry.tracker.cumulativeOutputTokens += handle.message.tokens.output
+                const check = checkTokenBudget(budgetEntry.tracker, budgetEntry.budget, budgetEntry.tracker.cumulativeOutputTokens)
+                if (check.action === "continue" && check.message) {
+                  const nudgeMsg: SessionV1.User = {
+                    id: MessageID.ascending(),
+                    role: "user",
+                    sessionID,
+                    time: { created: Date.now() },
+                    agent: lastUser.agent,
+                    model: lastUser.model,
+                  }
+                  yield* sessions.updateMessage(nudgeMsg)
+                  yield* sessions.updatePart({
+                    id: PartID.ascending(),
+                    messageID: nudgeMsg.id,
+                    sessionID,
+                    type: "text",
+                    text: check.message,
+                    synthetic: true,
+                  })
+                  return "continue" as const
+                }
+                sessionBudgets.delete(sessionID)
+              }
+              return "break" as const
+            }
             if (result === "compact") {
               yield* compaction.create({
                 sessionID,
