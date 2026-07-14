@@ -10,6 +10,7 @@ import { ProjectV2 } from "../project"
 import type { SessionSchema } from "./schema"
 import type { MessageID, PartID, SessionV1 } from "../v1/session"
 import { WorkspaceV2 } from "../workspace"
+import { Thread } from "@opencode-ai/schema/thread"
 import { Timestamps } from "../database/schema.sql"
 import type { SystemContext } from "../system-context/index"
 import { AgentV2 } from "../agent"
@@ -29,6 +30,7 @@ export const SessionTable = sqliteTable(
       .references(() => ProjectTable.id, { onDelete: "cascade" }),
     workspace_id: text().$type<WorkspaceV2.ID>(),
     parent_id: text().$type<SessionSchema.ID>(),
+    thread_id: text().$type<Thread.ID>(),
     slug: text().notNull(),
     directory: DatabasePath.directoryColumn().notNull(),
     path: DatabasePath.pathColumn(),
@@ -62,6 +64,7 @@ export const SessionTable = sqliteTable(
     index("session_project_idx").on(table.project_id),
     index("session_workspace_idx").on(table.workspace_id),
     index("session_parent_idx").on(table.parent_id),
+    index("session_thread_idx").on(table.thread_id),
   ],
 )
 

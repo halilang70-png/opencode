@@ -183,6 +183,14 @@ const layer = Layer.effect(
             mode: "primary",
             native: true,
           },
+          auto: {
+            name: "auto",
+            description: "Auto-yolo mode. Allows all tools without asking — no permission prompts.",
+            options: {},
+            permission: Permission.fromConfig({ "*": "allow" }),
+            mode: "primary",
+            native: true,
+          },
           general: {
             name: "general",
             description: `General-purpose agent for researching complex questions and executing multi-step tasks. Use this agent to execute multiple units of work in parallel.`,

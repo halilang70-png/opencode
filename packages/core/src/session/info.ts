@@ -6,6 +6,7 @@ import { ProjectV2 } from "../project"
 import { ProviderV2 } from "../provider"
 import { AbsolutePath, RelativePath } from "../schema"
 import { WorkspaceV2 } from "../workspace"
+import { Thread } from "@opencode-ai/schema/thread"
 import { SessionSchema } from "./schema"
 import { SessionTable } from "./sql"
 import { SessionMessage } from "./message"
@@ -17,6 +18,7 @@ export function fromRow(row: typeof SessionTable.$inferSelect): SessionSchema.In
     projectID: ProjectV2.ID.make(row.project_id),
     title: row.title,
     parentID: row.parent_id ? SessionSchema.ID.make(row.parent_id) : undefined,
+    threadID: row.thread_id ? Thread.ID.make(row.thread_id) : undefined,
     agent: row.agent ? AgentV2.ID.make(row.agent) : undefined,
     model: row.model
       ? {
