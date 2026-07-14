@@ -38,6 +38,7 @@ import {
 } from "../groups/session"
 import { PermissionNotFoundError } from "../errors"
 import * as SessionError from "./session-errors"
+import { mergeWorktree, getWorktreeDiff } from "@/workflow/worktree"
 
 const tryParseJson = (text: string) =>
   Effect.try({
@@ -410,6 +411,20 @@ export const sessionHandlers = HttpApiBuilder.group(InstanceHttpApi, "session", 
       return yield* session.updatePart(payload)
     })
 
+    const merge = Effect.fn("SessionHttpApi.merge")(function* (ctx: {
+      params: { sessionID: SessionID }
+    }) {
+      yield* requireSession(ctx.params.sessionID)
+      const sess = yield* session.get(ctx.params.sessionID).pipe(Effect.orDie)
+      const worktree = (sess.metadata as any)?.worktree
+      if (!worktree?.path) {
+        return { success: false, output: "No worktree associated with this session" }
+      }
+      const ctx2 = yield* InstanceState.context
+      const result = mergeWorktree(ctx2.directory, worktree.path)
+      return result
+    })
+
     return handlers
       .handle("list", list)
       .handle("status", status)
@@ -438,5 +453,6 @@ export const sessionHandlers = HttpApiBuilder.group(InstanceHttpApi, "session", 
       .handle("deleteMessage", deleteMessage)
       .handle("deletePart", deletePart)
       .handle("updatePart", updatePart)
+      .handle("merge", merge)
   }),
 )

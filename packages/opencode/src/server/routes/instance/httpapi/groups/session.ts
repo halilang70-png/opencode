@@ -102,6 +102,7 @@ export const SessionPaths = {
   deleteMessage: `${root}/:sessionID/message/:messageID`,
   deletePart: `${root}/:sessionID/message/:messageID/part/:partID`,
   updatePart: `${root}/:sessionID/message/:messageID/part/:partID`,
+  merge: `${root}/:sessionID/merge`,
 } as const
 
 export const SessionApi = HttpApi.make("session")
@@ -440,6 +441,18 @@ export const SessionApi = HttpApi.make("session")
           OpenApi.annotations({
             identifier: "part.update",
             description: "Update a part in a message.",
+          }),
+        ),
+        HttpApiEndpoint.post("merge", SessionPaths.merge, {
+          params: { sessionID: SessionID },
+          query: WorkspaceRoutingQuery,
+          success: described(Schema.Struct({ success: Schema.Boolean, output: Schema.String }), "Merge result"),
+          error: [HttpApiError.BadRequest, ApiNotFoundError],
+        }).annotateMerge(
+          OpenApi.annotations({
+            identifier: "session.merge",
+            summary: "Merge session changes",
+            description: "Merge changes from a session's worktree back into the main branch.",
           }),
         ),
       )
