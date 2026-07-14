@@ -3,6 +3,7 @@ import { Schema } from "effect"
 import { HttpApi, HttpApiEndpoint, HttpApiGroup, OpenApi } from "effect/unstable/httpapi"
 import { Authorization } from "../middleware/authorization"
 import { InstanceContextMiddleware } from "../middleware/instance-context"
+import { WorkspaceRoutingMiddleware } from "../middleware/workspace-routing"
 import { ApiNotFoundError } from "../errors"
 import { described } from "./metadata"
 
@@ -115,5 +116,6 @@ export const ThreadApi = HttpApi.make("thread")
         }),
       )
       .middleware(InstanceContextMiddleware)
+      .middleware(WorkspaceRoutingMiddleware)
       .middleware(Authorization),
   )

@@ -1,7 +1,7 @@
 export * as ThreadStore from "./store"
 
 import { eq, and } from "drizzle-orm"
-import { Context, Effect, Layer } from "effect"
+import { Context, DateTime, Effect, Layer } from "effect"
 import { Database } from "../database/database"
 import { makeGlobalNode } from "../effect/app-node"
 import { ThreadTable } from "./sql"
@@ -44,8 +44,8 @@ function fromRow(row: typeof ThreadTable.$inferSelect): Thread.Info {
     worktreeBranch: row.worktree_branch ?? undefined,
     status: row.status as "active" | "idle" | "completed",
     time: {
-      created: row.time_created,
-      updated: row.time_updated,
+      created: DateTime.makeUnsafe(row.time_created),
+      updated: DateTime.makeUnsafe(row.time_updated),
     },
   })
 }
@@ -97,7 +97,7 @@ const layer = Layer.effect(
           worktreePath: input.worktreePath,
           worktreeBranch: input.worktreeBranch,
           status: "active",
-          time: { created: now, updated: now },
+          time: { created: DateTime.makeUnsafe(now), updated: DateTime.makeUnsafe(now) },
         })
       }),
 
